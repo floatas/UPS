@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29326.143
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UPS", "UPS\UPS.csproj", "{EEAB0925-6317-461F-BEA4-BDC5E5CA4FFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UPS.Tests", "UPS.Tests\UPS.Tests.csproj", "{2FA6916B-52AA-4720-958E-2C038B9759BE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EEAB0925-6317-461F-BEA4-BDC5E5CA4FFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEAB0925-6317-461F-BEA4-BDC5E5CA4FFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEAB0925-6317-461F-BEA4-BDC5E5CA4FFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEAB0925-6317-461F-BEA4-BDC5E5CA4FFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FA6916B-52AA-4720-958E-2C038B9759BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FA6916B-52AA-4720-958E-2C038B9759BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FA6916B-52AA-4720-958E-2C038B9759BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FA6916B-52AA-4720-958E-2C038B9759BE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F9B0810D-4BEA-431A-95F9-F78F736D17DD}
+	EndGlobalSection
+EndGlobal
