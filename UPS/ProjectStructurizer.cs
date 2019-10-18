@@ -24,11 +24,36 @@ namespace UPS
                     {
                         Guid = guid,
                         ProjectName = GetFileName(name),
-                        ActualPath = PathBasedOnSln(slnFilePath, name)
+                        ActualPath = PathBasedOnSln(slnFilePath, name),
+                        ExpectedPath = GetExpectedPath(slnFilePath, GetProjectnameAndHisFolder(name), guid, mappings, directories)
                     };
                 });
 
             return matches;
+        }
+
+        private string GetProjectnameAndHisFolder(string name)
+        {
+            var parts = name.Split('\\');
+            return System.IO.Path.Combine(parts.Skip(parts.Length - 2).ToArray());
+        }
+
+        private string GetExpectedPath(string slnFilePath, string name, string guid, Dictionary<string, string> mappings, Dictionary<string, string> directories)
+        {
+            var slnBaseDir = System.IO.Path.GetDirectoryName(slnFilePath);
+
+            return System.IO.Path.Combine(slnBaseDir, GetMappingPath(guid, mappings, directories), name);
+        }
+
+        private string GetMappingPath(string guid, Dictionary<string, string> mappings, Dictionary<string, string> directories)
+        {
+            if (mappings.ContainsKey(guid))
+            {
+                var dirKey = mappings[guid];
+                return System.IO.Path.Combine(GetMappingPath(dirKey, mappings, directories), directories[dirKey]);
+            }
+
+            return string.Empty;
         }
 
         private string GetFileName(string path)
