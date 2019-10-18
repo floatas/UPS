@@ -9,14 +9,23 @@ namespace UPS
         public IEnumerable<ProjectStatus> GetProjectStatuses(string slnFilePath)
         {
             var fileContent = System.IO.File.ReadAllText(slnFilePath);
-            var projectRegex = @"9A19103F-16F7-4668-BE54-9A1E7A4F7556.*?, ""(?<projectName>.*?)""";
+            var projectRegex = @"9A19103F-16F7-4668-BE54-9A1E7A4F7556.*?, ""(?<projectName>.*?)"", ""{(?<projectGuid>.*?)}""";
             var regex = new Regex(projectRegex);
+
+            var mappings = NestingMappings(fileContent);
+            var directories = DirectoryMappings(fileContent);
+
             var matches = regex.Matches(fileContent)
-                .Select(m => m.Groups["projectName"].Value)
-                .Select(s => new ProjectStatus
+                .Select(s =>
                 {
-                    ProjectName = GetFileName(s),
-                    ActualPath = PathBasedOnSln(slnFilePath, s)
+                    var name = s.Groups["projectName"].Value;
+                    var guid = s.Groups["projectGuid"].Value;
+                    return new ProjectStatus
+                    {
+                        Guid = guid,
+                        ProjectName = GetFileName(name),
+                        ActualPath = PathBasedOnSln(slnFilePath, name)
+                    };
                 });
 
             return matches;
@@ -40,6 +49,36 @@ namespace UPS
             {
                 return null;
             }
+        }
+
+        private Dictionary<string, string> DirectoryMappings(string slnContent)
+        {
+            var directoryRegex = @"2150E333-8FDC-42A3-9474-1A3956D46DE8.*?, ""(?<projectName>.*?)"", ""{(?<projectGuid>.*?)}""";
+            var regex = new Regex(directoryRegex);
+            var matches = regex.Matches(slnContent);
+
+            var dict = new Dictionary<string, string>();
+            foreach (Match item in matches)
+            {
+                dict[item.Groups["projectGuid"].Value] = item.Groups["projectName"].Value;
+            }
+
+            return dict;
+        }
+
+        private Dictionary<string, string> NestingMappings(string slnContent)
+        {
+            var mappingRegex = @"{(?<project>.*?)} = {(?<folder>.*?)}";
+            var regex = new Regex(mappingRegex);
+            var matches = regex.Matches(slnContent);
+
+            var dict = new Dictionary<string, string>();
+            foreach (Match item in matches)
+            {
+                dict[item.Groups["project"].Value] = item.Groups["folder"].Value;
+            }
+
+            return dict;
         }
     }
 }
