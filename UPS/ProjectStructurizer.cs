@@ -65,7 +65,10 @@ namespace UPS
                     ReplaceInFile(status.ActualPath, reference, existingRelativeToNewPath);
                 }
             }
-            DirectoryCopy(Path.GetDirectoryName(status.ActualPath), Path.GetDirectoryName(status.ExpectedPath));
+            if (status.ActualPath != status.ExpectedPath)
+            {
+                DirectoryCopy(Path.GetDirectoryName(status.ActualPath), Path.GetDirectoryName(status.ExpectedPath));
+            }
         }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName,
@@ -93,7 +96,7 @@ namespace UPS
             foreach (FileInfo file in files)
             {
                 string temppath = Path.Combine(destDirName, file.Name);
-                file.CopyTo(temppath, false);
+                file.CopyTo(temppath, true);
             }
 
             // If copying subdirectories, copy them and their contents to new location.
