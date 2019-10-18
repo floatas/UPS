@@ -20,6 +20,12 @@ namespace UPS.Tests
             Assert.Contains(statuses, s => s.ProjectName.Equals("DatabaseConnection.csproj"));
             Assert.Contains(statuses, s => s.ProjectName.Equals("SpecialLibrary.csproj"));
 
+            Assert.Contains(statuses, s => s.OriginalProjectName.Equals(@"StructurlFailure\StructurlFailure.csproj"));
+            Assert.Contains(statuses, s => s.OriginalProjectName.Equals(@"MusicLibrary\MusicLibrary.csproj"));
+            Assert.Contains(statuses, s => s.OriginalProjectName.Equals(@"Helpers\MusicianLibrary\MusicianLibrary.csproj"));
+            Assert.Contains(statuses, s => s.OriginalProjectName.Equals(@"DatabaseConnection\DatabaseConnection.csproj"));
+            Assert.Contains(statuses, s => s.OriginalProjectName.Equals(@"SpecialLibrary\SpecialLibrary.csproj"));
+
             Assert.Contains(statuses, s => s.Guid.Equals("95B85B61-103D-4EA8-9BB8-469D58D9D2DE"));
             Assert.Contains(statuses, s => s.Guid.Equals("099005FF-E2E1-40F0-B5F8-C2D2751789BD"));
             Assert.Contains(statuses, s => s.Guid.Equals("FB888570-8E29-4664-AB71-F7D91EAE7C3B"));

@@ -24,6 +24,7 @@ namespace UPS
                     {
                         Guid = guid,
                         ProjectName = GetFileName(name),
+                        OriginalProjectName = name,
                         ActualPath = PathBasedOnSln(slnFilePath, name),
                         ExpectedPath = GetExpectedPath(slnFilePath, GetProjectnameAndHisFolder(name), guid, mappings, directories)
                     };
