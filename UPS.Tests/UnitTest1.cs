@@ -12,17 +12,25 @@ namespace UPS.Tests
 
             var statuses = (new ProjectStructurizer()).GetProjectStatuses(solutionPath);
 
-            Assert.Equal(4, statuses.Count());
+            Assert.Equal(5, statuses.Count());
 
             Assert.Contains(statuses, s => s.ProjectName.Equals("StructurlFailure.csproj"));
             Assert.Contains(statuses, s => s.ProjectName.Equals("MusicLibrary.csproj"));
             Assert.Contains(statuses, s => s.ProjectName.Equals("MusicianLibrary.csproj"));
             Assert.Contains(statuses, s => s.ProjectName.Equals("DatabaseConnection.csproj"));
+            Assert.Contains(statuses, s => s.ProjectName.Equals("SpecialLibrary.csproj"));
 
             Assert.Contains(statuses, s => s.ActualPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\StructurlFailure\StructurlFailure.csproj"));
             Assert.Contains(statuses, s => s.ActualPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\MusicLibrary\MusicLibrary.csproj"));
+            Assert.Contains(statuses, s => s.ActualPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\SpecialLibrary\SpecialLibrary.csproj"));
             Assert.Contains(statuses, s => s.ActualPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\Helpers\MusicianLibrary\MusicianLibrary.csproj"));
             Assert.Contains(statuses, s => s.ActualPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\DatabaseConnection\DatabaseConnection.csproj"));
+
+            //Assert.Contains(statuses, s => s.ExpectedPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\StructurlFailure\StructurlFailure.csproj"));
+            //Assert.Contains(statuses, s => s.ExpectedPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\ThirdParty\MusicLibrary\MusicLibrary.csproj"));
+            //Assert.Contains(statuses, s => s.ExpectedPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\ThirdParty\SpecialFolder\SpecialLibrary\SpecialLibrary.csproj"));
+            //Assert.Contains(statuses, s => s.ExpectedPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\ThirdParty\MusicianLibrary\MusicianLibrary.csproj"));
+            //Assert.Contains(statuses, s => s.ExpectedPath.Equals(@"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\DatabaseConnection\DatabaseConnection.csproj"));
         }
     }
 }

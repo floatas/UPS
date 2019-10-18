@@ -9,6 +9,7 @@
     <ProjectReference Include="..\DatabaseConnection\DatabaseConnection.csproj" />
     <ProjectReference Include="..\Helpers\MusicianLibrary\MusicianLibrary.csproj" />
     <ProjectReference Include="..\MusicLibrary\MusicLibrary.csproj" />
+    <ProjectReference Include="..\SpecialLibrary\SpecialLibrary.csproj" />
   </ItemGroup>
 
 </Project>
