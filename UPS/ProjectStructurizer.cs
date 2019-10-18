@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.IO;
+using System;
 
 namespace UPS
 {
@@ -8,7 +10,7 @@ namespace UPS
     {
         public IEnumerable<ProjectStatus> GetProjectStatuses(string slnFilePath)
         {
-            var fileContent = System.IO.File.ReadAllText(slnFilePath);
+            var fileContent = File.ReadAllText(slnFilePath);
             var projectRegex = @"9A19103F-16F7-4668-BE54-9A1E7A4F7556.*?, ""(?<projectName>.*?)"", ""{(?<projectGuid>.*?)}""";
             var regex = new Regex(projectRegex);
 
@@ -33,17 +35,96 @@ namespace UPS
             return matches;
         }
 
+        public void ProcessFile(string slnFilePath, ProjectStatus status, IEnumerable<ProjectStatus> statuses)
+        {
+            var slnBaseDir = Path.GetDirectoryName(slnFilePath);
+            var projectDir = Path.GetDirectoryName(status.ExpectedPath);
+            var oldProjectDir = Path.GetDirectoryName(status.ActualPath);
+            var newFolder = Path.GetRelativePath(slnBaseDir, projectDir);
+
+            var newPath = Path.Combine(newFolder, status.ProjectName);
+            var oldPath = status.OriginalProjectName;
+
+            //replace in sln file
+            ReplaceInFile(slnFilePath, oldPath, newPath);
+
+            var projectContent = File.ReadAllText(status.ActualPath);
+            var projectReferences = @"ProjectReference Include=""(?<reference>.*?)""";
+            var regex = new Regex(projectReferences);
+            var matches = regex.Matches(projectContent);
+            if (matches.Any())
+            {
+                foreach (Match match in matches)
+                {
+                    var reference = match.Groups["reference"].Value;
+                    var referencePath = Path.Combine(oldProjectDir, reference);
+                    var normalized = Path.GetFullPath(referencePath);
+                    var existing = statuses.First(x => normalized == x.ActualPath);
+                    var existingRelativeToNewPath = Path.GetRelativePath(projectDir, existing.ExpectedPath);
+
+                    ReplaceInFile(status.ActualPath, reference, existingRelativeToNewPath);
+                }
+            }
+            DirectoryCopy(Path.GetDirectoryName(status.ActualPath), Path.GetDirectoryName(status.ExpectedPath));
+        }
+
+        private static void DirectoryCopy(string sourceDirName, string destDirName,
+                                  bool copySubDirs = true)
+        {
+            // Get the subdirectories for the specified directory.
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourceDirName);
+            }
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            // If the destination directory doesn't exist, create it.
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string temppath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(temppath, false);
+            }
+
+            // If copying subdirectories, copy them and their contents to new location.
+            if (copySubDirs)
+            {
+                foreach (DirectoryInfo subdir in dirs)
+                {
+                    string temppath = Path.Combine(destDirName, subdir.Name);
+                    DirectoryCopy(subdir.FullName, temppath, copySubDirs);
+                }
+            }
+        }
+
+        private void ReplaceInFile(string file, string from, string to)
+        {
+            var allText = File.ReadAllText(file);
+            var newText = allText.Replace(from, to);
+            File.WriteAllText(file, newText);
+        }
+
         private string GetProjectnameAndHisFolder(string name)
         {
             var parts = name.Split('\\');
-            return System.IO.Path.Combine(parts.Skip(parts.Length - 2).ToArray());
+            return Path.Combine(parts.Skip(parts.Length - 2).ToArray());
         }
 
         private string GetExpectedPath(string slnFilePath, string name, string guid, Dictionary<string, string> mappings, Dictionary<string, string> directories)
         {
-            var slnBaseDir = System.IO.Path.GetDirectoryName(slnFilePath);
+            var slnBaseDir = Path.GetDirectoryName(slnFilePath);
 
-            return System.IO.Path.Combine(slnBaseDir, GetMappingPath(guid, mappings, directories), name);
+            return Path.Combine(slnBaseDir, GetMappingPath(guid, mappings, directories), name);
         }
 
         private string GetMappingPath(string guid, Dictionary<string, string> mappings, Dictionary<string, string> directories)
@@ -51,7 +132,7 @@ namespace UPS
             if (mappings.ContainsKey(guid))
             {
                 var dirKey = mappings[guid];
-                return System.IO.Path.Combine(GetMappingPath(dirKey, mappings, directories), directories[dirKey]);
+                return Path.Combine(GetMappingPath(dirKey, mappings, directories), directories[dirKey]);
             }
 
             return string.Empty;
@@ -65,9 +146,9 @@ namespace UPS
 
         private string PathBasedOnSln(string slnPath, string project)
         {
-            var slnBaseDir = System.IO.Path.GetDirectoryName(slnPath);
-            var expectedPath = System.IO.Path.Combine(slnBaseDir, project);
-            if (System.IO.File.Exists(expectedPath))
+            var slnBaseDir = Path.GetDirectoryName(slnPath);
+            var expectedPath = Path.Combine(slnBaseDir, project);
+            if (File.Exists(expectedPath))
             {
                 return expectedPath;
             }
