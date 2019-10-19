@@ -12,7 +12,7 @@ namespace UPS.Tests
             var solutionPath = @"C:\Users\sarun\source\repos\UPS\TestProject\StructurlFailure\StructurlFailure.sln";
 
             var structurizer = new ProjectStructurizer();
-            var statuses = structurizer.GetProjectStatuses(solutionPath);
+            var statuses = structurizer.GetAllProjectStatuses(solutionPath);
 
             Assert.Equal(5, statuses.Count());
 
@@ -59,7 +59,7 @@ namespace UPS.Tests
                 }
             }
 
-            var statusesAfter = (new ProjectStructurizer()).GetProjectStatuses(solutionPath);
+            var statusesAfter = (new ProjectStructurizer()).GetAllProjectStatuses(solutionPath);
 
             Assert.Equal(5, statusesAfter.Count());
 

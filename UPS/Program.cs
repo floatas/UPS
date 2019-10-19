@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace UPS
 {
@@ -7,23 +8,40 @@ namespace UPS
     {
         private static void Main(string[] args)
         {
-            var solutionPath = @"C:\Users\sarun\source\work\api\CarSharing.Api.sln";
+            if (args == null || args.Length != 1)
+            {
+                Console.WriteLine("Provide arguments:");
+                Console.WriteLine("\tPathToSolution.sln");
+                return;
+            }
+
+            var issues = 0;
+
+            var solutionPath = args.Last();
 
             var structurizer = new ProjectStructurizer();
-            var statuses = structurizer.GetProjectStatuses(solutionPath);
+            var statuses = structurizer.GetAllProjectStatuses(solutionPath);
 
             foreach (var status in statuses)
             {
                 structurizer.ProcessFile(solutionPath, status, statuses);
-            }
 
-            foreach (var status in statuses)
-            {
-                if (status.ActualPath != status.ExpectedPath)
+                if (!status.ActualPath.Equals(status.ExpectedPath, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Directory.Delete(Path.GetDirectoryName(status.ActualPath), true);
+                    Console.WriteLine($"Actual:   {status.ActualPath}");
+                    Console.WriteLine($"Expected: {status.ExpectedPath}");
+                    Console.WriteLine();
+
+                    issues++;
                 }
             }
+
+            foreach (var status in statuses.Where(status => status.ActualPath != status.ExpectedPath))
+            {
+                Directory.Delete(Path.GetDirectoryName(status.ActualPath), true);
+            }
+
+            Console.WriteLine($"Total issues: {issues}");
         }
     }
 }

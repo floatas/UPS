@@ -1,21 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.IO;
-using System;
 
 namespace UPS
 {
     public class ProjectStructurizer
     {
-        public IEnumerable<ProjectStatus> GetProjectStatuses(string slnFilePath)
+        public IEnumerable<ProjectStatus> GetAllProjectStatuses(string slnFilePath)
         {
             var fileContent = File.ReadAllText(slnFilePath);
-            var projectRegex = @"9A19103F-16F7-4668-BE54-9A1E7A4F7556.*?, ""(?<projectName>.*?)"", ""{(?<projectGuid>.*?)}""";
+            var projectRegex = @"(9A19103F-16F7-4668-BE54-9A1E7A4F7556|FAE04EC0-301F-11D3-BF4B-00C04F79EFBC).*?, ""(?<projectName>.*?)"", ""{(?<projectGuid>.*?)}""";
             var regex = new Regex(projectRegex);
 
-            var mappings = NestingMappings(fileContent);
-            var directories = DirectoryMappings(fileContent);
+            var mappings = this.GetDirectoryNestingMappings(fileContent);
+            var directories = this.GetDirectoryMappings(fileContent);
 
             var matches = regex.Matches(fileContent)
                 .Select(s =>
@@ -27,7 +26,7 @@ namespace UPS
                         Guid = guid,
                         ProjectName = GetFileName(name),
                         OriginalProjectName = name,
-                        ActualPath = PathBasedOnSln(slnFilePath, name),
+                        ActualPath = this.GetPathBasedOnSln(slnFilePath, name),
                         ExpectedPath = GetExpectedPath(slnFilePath, GetProjectnameAndHisFolder(name), guid, mappings, directories)
                     };
                 });
@@ -45,7 +44,6 @@ namespace UPS
             var newPath = Path.Combine(newFolder, status.ProjectName);
             var oldPath = status.OriginalProjectName;
 
-            //replace in sln file
             ReplaceInFile(slnFilePath, oldPath, newPath);
 
             var projectContent = File.ReadAllText(status.ActualPath);
@@ -94,6 +92,7 @@ namespace UPS
             }
         }
 
+        //Thank you SO, forgot link...
         private static void DirectoryCopy(string sourceDirName, string destDirName,
                                   bool copySubDirs = true)
         {
@@ -170,7 +169,7 @@ namespace UPS
             return parts.Last();
         }
 
-        private string PathBasedOnSln(string slnPath, string project)
+        private string GetPathBasedOnSln(string slnPath, string project)
         {
             var slnBaseDir = Path.GetDirectoryName(slnPath);
             var expectedPath = Path.Combine(slnBaseDir, project);
@@ -184,34 +183,34 @@ namespace UPS
             }
         }
 
-        private Dictionary<string, string> DirectoryMappings(string slnContent)
+        private Dictionary<string, string> GetDirectoryMappings(string slnContent)
         {
-            var directoryRegex = @"2150E333-8FDC-42A3-9474-1A3956D46DE8.*?, ""(?<projectName>.*?)"", ""{(?<projectGuid>.*?)}""";
+            var directoryRegex = @"2150E333-8FDC-42A3-9474-1A3956D46DE8.*?, ""(?<directoryName>.*?)"", ""{(?<directoryGuid>.*?)}""";
             var regex = new Regex(directoryRegex);
             var matches = regex.Matches(slnContent);
 
-            var dict = new Dictionary<string, string>();
+            var directories = new Dictionary<string, string>();
             foreach (Match item in matches)
             {
-                dict[item.Groups["projectGuid"].Value] = item.Groups["projectName"].Value;
+                directories[item.Groups["directoryGuid"].Value] = item.Groups["directoryName"].Value;
             }
 
-            return dict;
+            return directories;
         }
 
-        private Dictionary<string, string> NestingMappings(string slnContent)
+        private Dictionary<string, string> GetDirectoryNestingMappings(string slnContent)
         {
-            var mappingRegex = @"{(?<project>.*?)} = {(?<folder>.*?)}";
+            var mappingRegex = @"{(?<dirA>.*?)} = {(?<dirB>.*?)}";
             var regex = new Regex(mappingRegex);
             var matches = regex.Matches(slnContent);
 
-            var dict = new Dictionary<string, string>();
+            var nestings = new Dictionary<string, string>();
             foreach (Match item in matches)
             {
-                dict[item.Groups["project"].Value] = item.Groups["folder"].Value;
+                nestings[item.Groups["dirA"].Value] = item.Groups["dirB"].Value;
             }
 
-            return dict;
+            return nestings;
         }
     }
 }
