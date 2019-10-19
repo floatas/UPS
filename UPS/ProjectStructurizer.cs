@@ -65,9 +65,32 @@ namespace UPS
                     ReplaceInFile(status.ActualPath, reference, existingRelativeToNewPath);
                 }
             }
+
+            UpdateHintPaths(status.ActualPath, status.ExpectedPath);
             if (status.ActualPath != status.ExpectedPath)
             {
                 DirectoryCopy(Path.GetDirectoryName(status.ActualPath), Path.GetDirectoryName(status.ExpectedPath));
+            }
+        }
+
+        private void UpdateHintPaths(string projectFilePath, string expectedPath)
+        {
+            var oldProjectDir = Path.GetDirectoryName(projectFilePath);
+            var projectContent = File.ReadAllText(projectFilePath);
+            var hintPaths = @"<HintPath>(?<reference>.*?)</HintPath>";
+            var regex = new Regex(hintPaths);
+            var matches = regex.Matches(projectContent);
+            if (matches.Any())
+            {
+                foreach (Match match in matches)
+                {
+                    var reference = match.Groups["reference"].Value;
+                    var referencePath = Path.Combine(oldProjectDir, reference);
+                    var normalized = Path.GetFullPath(referencePath);
+                    var existingRelativeToNewPath = Path.GetRelativePath(Path.GetDirectoryName(expectedPath), normalized);
+
+                    ReplaceInFile(projectFilePath, reference, existingRelativeToNewPath);
+                }
             }
         }
 
