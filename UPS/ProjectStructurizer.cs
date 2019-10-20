@@ -46,38 +46,40 @@ namespace UPS
 
         public void ProcessFile(string slnFilePath, ProjectStatus status, IEnumerable<ProjectStatus> statuses)
         {
-            var slnBaseDir = Path.GetDirectoryName(slnFilePath);
+            var slnFileDir = Path.GetDirectoryName(slnFilePath);
             var projectDir = Path.GetDirectoryName(status.ExpectedPath);
-            var oldProjectDir = Path.GetDirectoryName(status.ActualPath);
-            var newFolder = Path.GetRelativePath(slnBaseDir, projectDir);
+            var newProjectDir = Path.GetRelativePath(slnFileDir, projectDir);
 
-            var newPath = Path.Combine(newFolder, status.ProjectName);
+            var newPath = Path.Combine(newProjectDir, status.ProjectName);
             var oldPath = status.OriginalProjectName;
 
             ReplaceInFile(slnFilePath, oldPath, newPath);
-
-            var projectContent = File.ReadAllText(status.ActualPath);
-            var projectReferences = @"ProjectReference Include=""(?<reference>.*?)""";
-            var regex = new Regex(projectReferences);
-            var matches = regex.Matches(projectContent);
-            if (matches.Any())
-            {
-                foreach (Match match in matches)
-                {
-                    var reference = match.Groups["reference"].Value;
-                    var referencePath = Path.Combine(oldProjectDir, reference);
-                    var normalized = Path.GetFullPath(referencePath);
-                    var existing = statuses.First(x => normalized == x.ActualPath);
-                    var existingRelativeToNewPath = Path.GetRelativePath(projectDir, existing.ExpectedPath);
-
-                    ReplaceInFile(status.ActualPath, reference, existingRelativeToNewPath);
-                }
-            }
-
+            UpdateReferencePaths(status.ActualPath, status.ExpectedPath, statuses);
             UpdateHintPaths(status.ActualPath, status.ExpectedPath);
+
             if (status.ActualPath != status.ExpectedPath)
             {
                 DirectoryCopy(Path.GetDirectoryName(status.ActualPath), Path.GetDirectoryName(status.ExpectedPath));
+            }
+        }
+
+        private void UpdateReferencePaths(string actualPath, string expectedPath, IEnumerable<ProjectStatus> allStatuses)
+        {
+            var oldProjectDir = Path.GetDirectoryName(actualPath);
+            var projectDir = Path.GetDirectoryName(expectedPath);
+
+            var projectContent = File.ReadAllText(actualPath);
+            var projectReferences = @"ProjectReference Include=""(?<reference>.*?)""";
+            var regex = new Regex(projectReferences);
+            foreach (Match match in regex.Matches(projectContent))
+            {
+                var reference = match.Groups["reference"].Value;
+                var referencePath = Path.Combine(oldProjectDir, reference);
+                var normalized = Path.GetFullPath(referencePath);
+                var existing = allStatuses.First(x => normalized == x.ActualPath);
+                var existingRelativeToNewPath = Path.GetRelativePath(projectDir, existing.ExpectedPath);
+
+                ReplaceInFile(actualPath, reference, existingRelativeToNewPath);
             }
         }
 
@@ -87,18 +89,14 @@ namespace UPS
             var projectContent = File.ReadAllText(projectFilePath);
             var hintPaths = @"<HintPath>(?<reference>.*?)</HintPath>";
             var regex = new Regex(hintPaths);
-            var matches = regex.Matches(projectContent);
-            if (matches.Any())
+            foreach (Match match in regex.Matches(projectContent))
             {
-                foreach (Match match in matches)
-                {
-                    var reference = match.Groups["reference"].Value;
-                    var referencePath = Path.Combine(oldProjectDir, reference);
-                    var normalized = Path.GetFullPath(referencePath);
-                    var existingRelativeToNewPath = Path.GetRelativePath(Path.GetDirectoryName(expectedPath), normalized);
+                var reference = match.Groups["reference"].Value;
+                var referencePath = Path.Combine(oldProjectDir, reference);
+                var normalized = Path.GetFullPath(referencePath);
+                var existingRelativeToNewPath = Path.GetRelativePath(Path.GetDirectoryName(expectedPath), normalized);
 
-                    ReplaceInFile(projectFilePath, reference, existingRelativeToNewPath);
-                }
+                ReplaceInFile(projectFilePath, reference, existingRelativeToNewPath);
             }
         }
 
