@@ -7,16 +7,26 @@ namespace UPS
 {
     public class ProjectStructurizer
     {
+        public const string ProjectFolderGuid = "66A26720-8FB5-11D2-AA7E-00C04F688DDE";
+        public const string SolutionFolderGuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8";
+        public readonly IEnumerable<string> FolderGuids = new List<string> { ProjectFolderGuid, SolutionFolderGuid };
+
         public IEnumerable<ProjectStatus> GetAllProjectStatuses(string slnFilePath)
         {
-            var fileContent = File.ReadAllText(slnFilePath);
-            var projectRegex = @"(9A19103F-16F7-4668-BE54-9A1E7A4F7556|FAE04EC0-301F-11D3-BF4B-00C04F79EFBC).*?, ""(?<projectName>.*?)"", ""{(?<projectGuid>.*?)}""";
+            var slnContent = File.ReadAllText(slnFilePath);
+            var slnFileDir = Path.GetDirectoryName(slnFilePath);
+            var projectRegex = @"(""{(?<projectType>.*?)}"").*?, ""(?<projectName>.*?)"", ""{(?<projectGuid>.*?)}""";
             var regex = new Regex(projectRegex);
 
-            var mappings = this.GetDirectoryNestingMappings(fileContent);
-            var directories = this.GetDirectoryMappings(fileContent);
+            var nestingMappings = GetDirectoryNestingMappings(slnContent);
 
-            var matches = regex.Matches(fileContent)
+            var matches = regex.Matches(slnContent);
+            var directories = matches
+                .Where(m => FolderGuids.Contains(m.Groups["projectType"].Value))
+                .ToDictionary(key => key.Groups["projectGuid"].Value, value => value.Groups["projectName"].Value);
+
+            var statuses = matches
+                .Where(m => !FolderGuids.Contains(m.Groups["projectType"].Value))
                 .Select(s =>
                 {
                     var name = s.Groups["projectName"].Value;
@@ -24,14 +34,14 @@ namespace UPS
                     return new ProjectStatus
                     {
                         Guid = guid,
-                        ProjectName = GetFileName(name),
+                        ProjectName = Path.GetFileName(name),
                         OriginalProjectName = name,
-                        ActualPath = this.GetPathBasedOnSln(slnFilePath, name),
-                        ExpectedPath = GetExpectedPath(slnFilePath, GetProjectnameAndHisFolder(name), guid, mappings, directories)
+                        ActualPath = Path.Combine(slnFileDir, name),
+                        ExpectedPath = Path.Combine(slnFileDir, GetSolutionFolderPath(guid, nestingMappings, directories), GetProjectnameAndHisFolder(name))
                     };
                 });
 
-            return matches;
+            return statuses;
         }
 
         public void ProcessFile(string slnFilePath, ProjectStatus status, IEnumerable<ProjectStatus> statuses)
@@ -145,72 +155,27 @@ namespace UPS
             return Path.Combine(parts.Skip(parts.Length - 2).ToArray());
         }
 
-        private string GetExpectedPath(string slnFilePath, string name, string guid, Dictionary<string, string> mappings, Dictionary<string, string> directories)
-        {
-            var slnBaseDir = Path.GetDirectoryName(slnFilePath);
-
-            return Path.Combine(slnBaseDir, GetMappingPath(guid, mappings, directories), name);
-        }
-
-        private string GetMappingPath(string guid, Dictionary<string, string> mappings, Dictionary<string, string> directories)
+        private string GetSolutionFolderPath(string guid, Dictionary<string, string> mappings, Dictionary<string, string> directories)
         {
             if (mappings.ContainsKey(guid))
             {
                 var dirKey = mappings[guid];
-                return Path.Combine(GetMappingPath(dirKey, mappings, directories), directories[dirKey]);
+                return Path.Combine(GetSolutionFolderPath(dirKey, mappings, directories), directories[dirKey]);
             }
 
             return string.Empty;
-        }
-
-        private string GetFileName(string path)
-        {
-            var parts = path.Split('\\');
-            return parts.Last();
-        }
-
-        private string GetPathBasedOnSln(string slnPath, string project)
-        {
-            var slnBaseDir = Path.GetDirectoryName(slnPath);
-            var expectedPath = Path.Combine(slnBaseDir, project);
-            if (File.Exists(expectedPath))
-            {
-                return expectedPath;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        private Dictionary<string, string> GetDirectoryMappings(string slnContent)
-        {
-            var directoryRegex = @"2150E333-8FDC-42A3-9474-1A3956D46DE8.*?, ""(?<directoryName>.*?)"", ""{(?<directoryGuid>.*?)}""";
-            var regex = new Regex(directoryRegex);
-            var matches = regex.Matches(slnContent);
-
-            var directories = new Dictionary<string, string>();
-            foreach (Match item in matches)
-            {
-                directories[item.Groups["directoryGuid"].Value] = item.Groups["directoryName"].Value;
-            }
-
-            return directories;
         }
 
         private Dictionary<string, string> GetDirectoryNestingMappings(string slnContent)
         {
             var mappingRegex = @"{(?<dirA>.*?)} = {(?<dirB>.*?)}";
             var regex = new Regex(mappingRegex);
-            var matches = regex.Matches(slnContent);
 
-            var nestings = new Dictionary<string, string>();
-            foreach (Match item in matches)
-            {
-                nestings[item.Groups["dirA"].Value] = item.Groups["dirB"].Value;
-            }
+            var nesting = regex.Matches(slnContent)
+                .ToDictionary(key => key.Groups["dirA"].Value,
+                value => value.Groups["dirB"].Value);
 
-            return nestings;
+            return nesting;
         }
     }
 }
