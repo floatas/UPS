@@ -6,6 +6,12 @@
     <PackAsTool>true</PackAsTool>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <ToolCommandName>dotnet-ups</ToolCommandName>
+    <NuspecFile></NuspecFile>
+    <PackageId>dotnet-ups</PackageId>
+    <Authors>Šarūnas Floatas Intas</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Product>Unscrew Project Structure</Product>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
 </Project>
