@@ -12,6 +12,8 @@ dotnet tool install --global dotnet-ups --version 1.0.0
 
 [NuGet](https://www.nuget.org/packages/dotnet-ups)
 
+#### Solution
+![Solution view](https://github.com/floatas/UPS/blob/master/Content/SlnView.PNG?raw=true "Solution view")
 
 #### Before
 ```
