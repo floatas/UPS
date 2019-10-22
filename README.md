@@ -24,3 +24,13 @@ dotnet tool install --global dotnet-ups --version 1.0.0
 ```
 
 #### After
+```
+├───DatabaseConnection
+├───StructurlFailure
+└───ThirdParty
+    ├───MusicianLibrary
+    ├───MusicLibrary
+    └───SpecialFolder
+        └───SpecialLibrary
+```
+
