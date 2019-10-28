@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,48 +10,68 @@ namespace UPS
     {
         private static void Main(string[] args)
         {
-            if (!TryParseArguments(args, out string slnPath))
+            if (!TryParseArguments(args, out string slnPath, out bool onlyCheck))
             {
                 return;
             }
 
-            var issues = 0;
+            var issues = ProcessSolution(slnPath, onlyCheck);
+
+            foreach ((string actualPath, string expectedPath) in issues)
+            {
+                Console.WriteLine($"Actual:   {actualPath}");
+                Console.WriteLine($"Expected: {expectedPath}");
+                Console.WriteLine();
+            }
+
+            Console.WriteLine($"Total issues: {issues.Count()}");
+        }
+
+        private static IEnumerable<Tuple<string, string>> ProcessSolution(string pathToSln, bool onlyCheck)
+        {
+            var issues = new List<Tuple<string, string>>();
 
             var structurizer = new ProjectStructurizer();
-            var statuses = structurizer.GetAllProjectStatuses(slnPath);
+            var statuses = structurizer.GetAllProjectStatuses(pathToSln);
 
             foreach (var status in statuses)
             {
-                structurizer.ProcessFile(slnPath, status, statuses);
+                if (!onlyCheck)
+                {
+                    structurizer.ProcessFile(pathToSln, status, statuses);
+                }
 
                 if (!status.ActualPath.Equals(status.ExpectedPath, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Console.WriteLine($"Actual:   {status.ActualPath}");
-                    Console.WriteLine($"Expected: {status.ExpectedPath}");
-                    Console.WriteLine();
-
-                    issues++;
+                    issues.Add(new Tuple<string, string>(status.ActualPath, status.ExpectedPath));
                 }
             }
 
-            foreach (var status in statuses.Where(status => status.ActualPath != status.ExpectedPath))
+            if (!onlyCheck)
             {
-                Directory.Delete(Path.GetDirectoryName(status.ActualPath), true);
+                foreach (var status in statuses.Where(status => status.ActualPath != status.ExpectedPath))
+                {
+                    Directory.Delete(Path.GetDirectoryName(status.ActualPath), true);
+                }
             }
 
-            Console.WriteLine($"Total issues: {issues}");
+            return issues;
         }
 
-        private static bool TryParseArguments(string[] args, out string slnPath)
+        private static bool TryParseArguments(string[] args, out string slnPath, out bool onlyCheck)
         {
             slnPath = null;
-            if (args == null || args.Length != 1)
+            onlyCheck = false;
+
+            if (args == null || (args.Length != 1 && args.Length != 2))
             {
-                Console.WriteLine("Provide arguments:");
-                Console.WriteLine("\tPathToSolution.sln");
+                Console.Write("Provide arguments:");
+                Console.Write("\t[onlyCheck]");
+                Console.Write("\tPathToSolution.sln");
                 return false;
             }
 
+            onlyCheck = args.Any(arg => arg.Equals("onlyCheck", StringComparison.InvariantCultureIgnoreCase));
 
             slnPath = args.Last();
             var isAbsolute = Uri.TryCreate(slnPath, UriKind.Absolute, out _);
