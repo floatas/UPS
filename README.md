@@ -7,10 +7,10 @@ UPS project allows to synchronize Visual Studio solution folder structure to phy
 The `UPS` tool is invoked by specifying **full path** to the solution (.sln) file.
 
 ```
-dotnet tool install --global dotnet-ups --version 1.0.0
+dotnet tool install --global dotnet-ups
 ```
 
-[NuGet](https://www.nuget.org/packages/dotnet-ups)
+Download from [NuGet](https://www.nuget.org/packages/dotnet-ups)
 
 #### Solution
 ![Solution view](https://github.com/floatas/UPS/blob/master/Content/SlnView.PNG?raw=true "Solution view")
