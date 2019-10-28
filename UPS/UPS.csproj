@@ -8,10 +8,14 @@
     <ToolCommandName>dotnet-ups</ToolCommandName>
     <NuspecFile></NuspecFile>
     <PackageId>dotnet-ups</PackageId>
-    <Authors>Šarūnas Floatas Intas</Authors>
+    <Authors>Šarūnas Intas</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Product>Unscrew Project Structure</Product>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Company>Šarūnas Intas</Company>
+    <Version>1.0.1</Version>
+    <PackageProjectUrl>https://github.com/floatas/UPS</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/floatas/UPS</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
