@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace UPS
 {
@@ -8,23 +9,19 @@ namespace UPS
     {
         private static void Main(string[] args)
         {
-            if (args == null || args.Length != 1)
+            if (!TryParseArguments(args, out string slnPath))
             {
-                Console.WriteLine("Provide arguments:");
-                Console.WriteLine("\tPathToSolution.sln");
                 return;
             }
 
             var issues = 0;
 
-            var solutionPath = args.Last();
-
             var structurizer = new ProjectStructurizer();
-            var statuses = structurizer.GetAllProjectStatuses(solutionPath);
+            var statuses = structurizer.GetAllProjectStatuses(slnPath);
 
             foreach (var status in statuses)
             {
-                structurizer.ProcessFile(solutionPath, status, statuses);
+                structurizer.ProcessFile(slnPath, status, statuses);
 
                 if (!status.ActualPath.Equals(status.ExpectedPath, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -43,5 +40,28 @@ namespace UPS
 
             Console.WriteLine($"Total issues: {issues}");
         }
+
+        private static bool TryParseArguments(string[] args, out string slnPath)
+        {
+            slnPath = null;
+            if (args == null || args.Length != 1)
+            {
+                Console.WriteLine("Provide arguments:");
+                Console.WriteLine("\tPathToSolution.sln");
+                return false;
+            }
+
+
+            slnPath = args.Last();
+            var isAbsolute = Uri.TryCreate(slnPath, UriKind.Absolute, out _);
+
+            if (!isAbsolute)
+            {
+                slnPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), slnPath);
+            }
+
+            return true;
+        }
+
     }
 }
