@@ -6,9 +6,9 @@ using System.Reflection;
 
 namespace UPS
 {
-    internal class Program
+    public class Program
     {
-        private static void Main(string[] args)
+        public static void Main(string[] args)
         {
             if (!TryParseArguments(args, out string slnPath, out bool onlyCheck))
             {
@@ -66,12 +66,12 @@ namespace UPS
             if (args == null || (args.Length != 1 && args.Length != 2))
             {
                 Console.Write("Provide arguments:");
-                Console.Write("\t[onlyCheck]");
+                Console.Write("\t[check]");
                 Console.Write("\tPathToSolution.sln");
                 return false;
             }
 
-            onlyCheck = args.Any(arg => arg.Equals("onlyCheck", StringComparison.InvariantCultureIgnoreCase));
+            onlyCheck = args.Any(arg => arg.Equals("check", StringComparison.InvariantCultureIgnoreCase));
 
             slnPath = args.Last();
             var isAbsolute = Uri.TryCreate(slnPath, UriKind.Absolute, out _);
