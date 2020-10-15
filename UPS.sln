@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29326.143
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UPS", "UPS\UPS.csproj", "{EEAB0925-6317-461F-BEA4-BDC5E5CA4FFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UPS", "UPS\UPS.csproj", "{EEAB0925-6317-461F-BEA4-BDC5E5CA4FFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UPS.Tests", "UPS.Tests\UPS.Tests.csproj", "{2FA6916B-52AA-4720-958E-2C038B9759BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UPS.Tests", "UPS.Tests\UPS.Tests.csproj", "{2FA6916B-52AA-4720-958E-2C038B9759BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NH", "NH\NH.csproj", "{39197D2B-8B17-4974-8409-90ED3B24DB88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{2FA6916B-52AA-4720-958E-2C038B9759BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2FA6916B-52AA-4720-958E-2C038B9759BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2FA6916B-52AA-4720-958E-2C038B9759BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39197D2B-8B17-4974-8409-90ED3B24DB88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39197D2B-8B17-4974-8409-90ED3B24DB88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39197D2B-8B17-4974-8409-90ED3B24DB88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39197D2B-8B17-4974-8409-90ED3B24DB88}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
