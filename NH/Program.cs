@@ -36,9 +36,6 @@ namespace NH
             foreach (var item in projectPaths)
                 UpdateProject(item, requiredDeps);
 
-
-            //I know which one changed
-
             Console.WriteLine(totalCount.Distinct().Count());
             Console.WriteLine();
         }
@@ -61,9 +58,8 @@ namespace NH
                 if (required != null && required.Version != nugetVersion)
                 {
                     if (changed == false)
-                    {
                         Console.WriteLine(Path.GetFileNameWithoutExtension(path));
-                    }
+
                     nugetRef.Attribute("Version").SetValue(required.Version);
                     Console.WriteLine($"\t{package}:{version} -> {required.Version}");
                     changed = true;
@@ -115,23 +111,23 @@ namespace NH
             return rootPackage;
         }
 
-        private static List<NugetDependency> MergeKeepingLatest(List<NugetDependency> currentList, List<NugetDependency> append)
+        private static List<NugetDependency> MergeKeepingLatest(List<NugetDependency> currentList, List<NugetDependency> packagesToAppend)
         {
             var copy = currentList.ToList();
-            foreach (var item2 in append)
+            foreach (var package in packagesToAppend)
             {
-                var containing = copy.FirstOrDefault(x => x.Package == item2.Package);
+                var containing = copy.FirstOrDefault(x => x.Package == package.Package);
                 if (containing != null)
                 {
-                    if (containing.Version < item2.Version)
+                    if (containing.Version < package.Version)
                     {
                         currentList.Remove(containing);
-                        copy.Add(item2);
+                        copy.Add(package);
                     }
                 }
                 else
                 {
-                    copy.Add(item2);
+                    copy.Add(package);
                 }
             }
             return copy;

@@ -15,11 +15,11 @@ namespace NH
     {
         private NugetSourceSettings _settings;
         private List<FindPackageByIdResource> _nugetSources;
+        private SourceCacheContext _cache;
 
         public NugetService(NugetSourceSettings settings)
         {
             _settings = settings;
-
             _nugetSources = new List<FindPackageByIdResource>();
         }
 
@@ -29,7 +29,7 @@ namespace NH
             {
                 var source = new PackageSource(setting.Source, setting.Name, true, false);
                 if (setting.Credentials != null)
-                source.Credentials = new PackageSourceCredential(setting.Source, setting.Credentials.Username, setting.Credentials.Password, setting.Credentials.IsPasswordClearText, string.Empty);
+                    source.Credentials = new PackageSourceCredential(setting.Source, setting.Credentials.Username, setting.Credentials.Password, setting.Credentials.IsPasswordClearText, string.Empty);
                 var repo = Repository.Factory.GetCoreV3(source);
                 _nugetSources.Add(await repo.GetResourceAsync<FindPackageByIdResource>());
             }
@@ -40,13 +40,10 @@ namespace NH
             var logger = NullLogger.Instance;
             CancellationToken cancellationToken = CancellationToken.None;
 
-            SourceCacheContext cache = new SourceCacheContext();
-
             FindPackageByIdDependencyInfo info = null;
-
             foreach (var source in _nugetSources)
             {
-                info = await source.GetDependencyInfoAsync(packageName, version, cache, logger, cancellationToken);
+                info = await source.GetDependencyInfoAsync(packageName, version, _cache, logger, cancellationToken);
                 if (info != null)
                     break;
             }
